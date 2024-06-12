@@ -56,4 +56,3 @@ window.addEventListener('load', () => {
 });
 
 updateColorScheme();
-loadFingerprinter();

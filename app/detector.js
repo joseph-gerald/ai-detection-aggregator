@@ -144,7 +144,7 @@ async function perform_ai_detection(query_text) {
         failCount++;
         if (failCount < 3) {
             const message = `Retrying... (attempt ${failCount})`;
-            
+
             results.innerHTML = "";
             sumbit.value = "Submit";
 
@@ -214,7 +214,7 @@ async function addResults(query_results, query_text) {
                 average_ai /= query_array.length;
                 resultDiv.innerHTML =
                     `
-                    <h3 style="margin: 0">${key} (inaccurate) response</h3>
+                    <h3 style="margin: 0">${key} <small><code>(legacy/outdated)</code></small></h3>
                     <hr style="width: 100%">
                     <p style="margin: 0"><b>AVG ROBOT - </b>${Math.round(average_ai * 100)}%</p>
                     <p style="margin: 0"><b>TOP ROBOT - </b>${Math.round(top_ai * 100)}%</p>
@@ -224,15 +224,15 @@ async function addResults(query_results, query_text) {
                     </div>
                 `
                 break;
-            case "gtlr":
+            case "gltr":
                 const adjustedGrade = (((result.average_score) * (result.sus_score) * (result.sussy_scores - 0.7) / (result.average_rank)) - 0.05) * 10 * 100;
                 resultDiv.innerHTML =
                     `
-                    <h3 style="margin: 0">${key} response</h3>
+                    <h3 style="margin: 0">gltr.io <small><code>(legacy/inaccurate)</code></small></h3>
                     <hr style="width: 100%">
                     <p style="margin: 0"><b>ADJUSTED AI GRADE</b> - ${(Math.min(100, Math.max(adjustedGrade, 0))).toFixed(0)}%</p>
-                    <i style="cursor: pointer" id="nerdinfoswitch_gtlr" onclick="nerd_info_gtlr.hidden=false; nerdinfoswitch_gtlr.hidden=true;">NERD INFO</i>
-                    <div id="nerd_info_gtlr" hidden>
+                    <i style="cursor: pointer" id="nerdinfoswitch_gltr" onclick="nerd_info_gltr.hidden=false; nerdinfoswitch_gltr.hidden=true;">NERD INFO</i>
+                    <div id="nerd_info_gltr" hidden>
                         <hr style="width: 100%">
                         <b>AVERAGE RANK </b>${result.average_rank} 
                         <br>
@@ -247,7 +247,7 @@ async function addResults(query_results, query_text) {
             case "seoai":
                 resultDiv.innerHTML =
                     `
-                    <h3 style="margin: 0">${key} response</h3>
+                    <h3 style="margin: 0">seo.ai</h3>
                     <hr style="width: 100%">
                     <p style="margin: 0"><b>AI %</b> - ${Math.round((result.prediction + result.entropy + result.correlation) / 3) * 100}%</p>
                     
@@ -280,10 +280,35 @@ async function addResults(query_results, query_text) {
                 result.completely_generated_prob = Math.round((result.completely_generated_prob - 0.01) * 1.01010101);
                 const robot_prob = result.completely_generated_prob; // Math.max(Math.min(-Math.pow(result.completely_generated_prob,2)+result.completely_generated_prob*3-0.01,1),0); // Logarithmic Growth
                 resultDiv.innerHTML = `
-                    <h3 style="margin: 0">${key} response</h3>
+                    <h3 style="margin: 0">gptzero.me</h3>
                     <hr style="width: 100%">
-                    <b>ROBOT % </b>${Math.round(robot_prob * 100)}%
-                    <b>HUMAN % </b>${Math.round((1 - robot_prob) * 100)}%
+
+                    <div style="
+                        background: linear-gradient(to right, var(--ai-highlight) ${robot_prob * 100}%, transparent ${robot_prob * 100}%) no-repeat;
+                        background-color: var(--main-shadow-color);
+                        width: calc(100% - 10px);
+                        font-size: 10px;
+                        font-weight: bold;
+                        padding: 4px 6px;
+                        display: flex;
+                        gap: 2px;
+                    ">
+                        <span style="min-width: 22px; display: block;">${Math.round(robot_prob * 100)}%</span> / ROBOT
+                    </div>
+
+                    <div style="
+                        background: linear-gradient(to right, var(--human-highlight) ${100 - robot_prob * 100}%, transparent ${100 - robot_prob * 100}%) no-repeat;
+                        background-color: var(--main-shadow-color);
+                        width: calc(100% - 10px);
+                        font-size: 10px;
+                        font-weight: bold;
+                        padding: 4px 6px;
+                        display: flex;
+                        gap: 2px;
+                    ">
+                        <span style="min-width: 22px; display: block;">${Math.round(100 - robot_prob * 100)}%</span> / HUMAN
+                    </div>
+
                     <br>
                     <hr style="width: 100%">
                     <i style="cursor: pointer" id="gptzero_text_switch" onclick="gptzero_text.hidden=false; gptzero_text_switch.hidden=true;">SHOW MARKED TEXT</i>
@@ -300,16 +325,94 @@ async function addResults(query_results, query_text) {
                 }
                 resultDiv.innerHTML =
                     `
-                    <h3 style="margin: 0">${key} response</h3>
+                    <h3 style="margin: 0">zerogpt.com</h3>
                     <hr style="width: 100%">
-                    <b>ROBOT % </b>${result.fake_score}%
-                    <b>HUMAN % </b>${result.human_score}%
+
+                    <div style="
+                        background: linear-gradient(to right, var(--ai-highlight) ${result.fake_score}%, transparent ${result.fake_score}%) no-repeat;
+                        background-color: var(--main-shadow-color);
+                        width: calc(100% - 10px);
+                        font-size: 10px;
+                        font-weight: bold;
+                        padding: 4px 6px;
+                        display: flex;
+                        gap: 2px;
+                    ">
+                        <span style="min-width: 22px; display: block;">${Math.round(result.fake_score)}%</span> / ROBOT
+                    </div>
+
+                    <div style="
+                        background: linear-gradient(to right, var(--human-highlight) ${result.human_score}%, transparent ${result.human_score}%) no-repeat;
+                        background-color: var(--main-shadow-color);
+                        width: calc(100% - 10px);
+                        font-size: 10px;
+                        font-weight: bold;
+                        padding: 4px 6px;
+                        display: flex;
+                        gap: 2px;
+                    ">
+                        <span style="min-width: 22px; display: block;">${Math.round(result.human_score)}%</span> / HUMAN
+                    </div>
+
                     <br>
                     <hr style="width: 100%">
                     <i style="cursor: pointer" id="zerogpt_text_switch" onclick="zerogpt_text.hidden=false; zerogpt_text_switch.hidden=true;">SHOW MARKED TEXT</i>
                     <h6 id="zerogpt_text" style="margin: 0" hidden>${marked_text}</h6>
                 `
                 break;
+            case "radar":
+                const models = ["DOLLY V2 3B", "CAMEL 5B", "DOLLY V1 6B", "VICUNA 7B"];
+                const probs = {};
+                Object.entries(result.map((result) => result.results[0].p)).map(([index, prob]) => probs[models[index]] = prob);
+
+                let resultHTML = `
+                    <h3 style="margin: 0">${key} models</h3>
+                    <hr style="width: 100%">
+                    <small>MEDIAN AI % ${
+                        ((() => {
+                            const sorted = Object.values(probs).sort();
+
+                            if (sorted.length % 2 === 0) {
+                                return (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2;
+                            } else {
+                                return sorted[Math.floor(sorted.length / 2)];
+                            }
+                        })() * 100).toFixed(1)
+                    }</small>
+                    <div style="border-radius: 6px; overflow: hidden; background: var(--main-shadow-color); margin-top: 10px">
+                `;
+
+                let modelIndex = 0;
+
+                for (const score of Object.entries(probs).sort((a, b) => b[1] - a[1])) {
+                    const model = score[0];
+                    const prob = score[1];
+                    resultHTML += `
+                    <div style="
+                        background: linear-gradient(to right, var(${
+                            (() => {
+                                if (prob < 0.5) return "--human-highlight";
+                                if (prob < 0.8) return "--mix-highlight";
+                                return "--ai-highlight";
+                            })()
+                        }) ${prob * 100}%, transparent ${prob * 100}%) no-repeat;
+                        width: calc(100% - 10px);
+                        font-size: 10px;
+                        font-weight: bold;
+                        padding: 4px 6px;
+                        display: flex;
+                        gap: 2px;
+                        ${modelIndex++ != Object.keys(probs).length-1 ? "border-bottom: solid 1px var(--main-shadow-color);" : ""}
+                    ">
+                        <span style="min-width: 22px; display: block;">${Math.round(prob * 100)}%</span> / ${model}
+                    </div>`
+                }
+
+                resultHTML += "</div>"
+
+                resultDiv.innerHTML = resultHTML;
+                break;
+
             default:
                 resultDiv.innerHTML =
                     `
@@ -334,11 +437,16 @@ async function addResults(query_results, query_text) {
 async function getDetectionResults(query_text) {
     const results = {}
     const query_array = splitTextIntoChunks(query_text, 200);
-    results["gtlr"] = GTLR_VERDICT(query_text)
-    results["seoai"] = SEOAI_VERDICT(query_text)
-    results["roberta"] = ROBERTA_VERDICT(query_array)
+
+    results["radar"] = RADAR_AGGREGATE(query_text)
+
     results["gptzero"] = GPTZERO_VERDICT(query_text)
     results["zerogpt"] = ZEROGPT_VERDICT(query_text)
+
+    results["seoai"] = SEOAI_VERDICT(query_text)
+
+    results["gltr"] = gltr_VERDICT(query_text)
+    results["roberta"] = ROBERTA_VERDICT(query_array)
 
     const keys = Object.keys(results);
 
@@ -381,7 +489,7 @@ function GPTZERO_VERDICT(query_text) {
 }
 
 
-function GTLR_VERDICT(query_text) {
+function gltr_VERDICT(query_text) {
     return fetch(BASE_URL + "/gtlr_interp", {
         method: "POST",
         body: query_text
@@ -405,6 +513,51 @@ function ROBERTA_VERDICT(query_array) {
         body: JSON.stringify(query_array),
         headers: { "Authorization": "Bearer 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" }
     })
+}
+
+function RADAR_WRAPPER(query_text, index) {
+    return fetch("https://radar-app.vizhub.ai/api/checkTexts", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            model_index: index,
+            texts: [query_text]
+        })
+    });
+}
+
+function DOLLY_V2_3B_VERDICT(query_text) {
+    return RADAR_WRAPPER(query_text, 0);
+}
+
+function CAMEL_5B_VERDICT(query_text) {
+    return RADAR_WRAPPER(query_text, 1);
+}
+
+function DOLLY_V1_6B_VERDICT(query_text) {
+    return RADAR_WRAPPER(query_text, 2);
+}
+
+function VICUNA_7B_VERDICT(query_text) {
+    return RADAR_WRAPPER(query_text, 3);
+}
+
+async function RADAR_AGGREGATE(query_text) {
+    const results = await Promise.all([
+        DOLLY_V2_3B_VERDICT(query_text),
+        CAMEL_5B_VERDICT(query_text),
+        DOLLY_V1_6B_VERDICT(query_text),
+        VICUNA_7B_VERDICT(query_text)
+    ]);
+
+    return {
+        json: async () => {
+            const jsonResults = await Promise.all(results.map(result => result.json()));
+            return jsonResults;
+        }
+    };
 }
 
 function splitTextIntoChunks(text, maxChunkSize) {
