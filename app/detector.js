@@ -214,11 +214,11 @@ async function addResults(query_results, query_text) {
                 average_ai /= query_array.length;
                 resultDiv.innerHTML =
                     `
-                    <h3 style="margin: 0">${key} <small><code>(legacy/outdated)</code></small></h3>
+                    <h3 style="margin: 0">roberta <small><code>@ hf.co  (legacy/outdated)</code></small></h3>
                     <hr style="width: 100%">
                     <p style="margin: 0"><b>AVG ROBOT - </b>${Math.round(average_ai * 100)}%</p>
                     <p style="margin: 0"><b>TOP ROBOT - </b>${Math.round(top_ai * 100)}%</p>
-                    <i style="cursor: pointer" id="roberta_switch" onclick="roberta.hidden=false; roberta_switch.hidden=true;">SHOW PARTS</i>
+                    <i style="cursor: pointer; font-size: 10px; margin-top: 4px;" id="roberta_switch" onclick="roberta.hidden=false; roberta_switch.hidden=true;">SHOW PARTS</i>
                     <div id="roberta" hidden>
                         ${ai_combine}
                     </div>
@@ -230,8 +230,8 @@ async function addResults(query_results, query_text) {
                     `
                     <h3 style="margin: 0">gltr.io <small><code>(legacy/inaccurate)</code></small></h3>
                     <hr style="width: 100%">
-                    <p style="margin: 0"><b>ADJUSTED AI GRADE</b> - ${(Math.min(100, Math.max(adjustedGrade, 0))).toFixed(0)}%</p>
-                    <i style="cursor: pointer" id="nerdinfoswitch_gltr" onclick="nerd_info_gltr.hidden=false; nerdinfoswitch_gltr.hidden=true;">NERD INFO</i>
+                    <p style="margin: 0"><b>AAG / AI %</b> - ${(Math.min(100, Math.max(adjustedGrade, 0))).toFixed(0)}%</p>
+                    <i style="cursor: pointer; font-size: 10px; margin-top: 4px;" id="nerdinfoswitch_gltr" onclick="nerd_info_gltr.hidden=false; nerdinfoswitch_gltr.hidden=true;">NERD INFO</i>
                     <div id="nerd_info_gltr" hidden>
                         <hr style="width: 100%">
                         <b>AVERAGE RANK </b>${result.average_rank} 
@@ -249,9 +249,9 @@ async function addResults(query_results, query_text) {
                     `
                     <h3 style="margin: 0">seo.ai</h3>
                     <hr style="width: 100%">
-                    <p style="margin: 0"><b>AI %</b> - ${Math.round((result.prediction + result.entropy + result.correlation) / 3) * 100}%</p>
+                    <p style="margin: 0"><b>AI %</b> - ${Math.round((result.prediction + result.entropy + result.correlation + result.perplexity) / 4) * 100}%</p>
                     
-                    <i style="cursor: pointer" id="nerdinfoswitch_seo" onclick="nerd_info_seo.hidden=false; nerdinfoswitch_seo.hidden=true;">NERD INFO</i>
+                    <i style="cursor: pointer; font-size: 10px; margin-top: 4px;" id="nerdinfoswitch_seo" onclick="nerd_info_seo.hidden=false; nerdinfoswitch_seo.hidden=true;">NERD INFO</i>
                     <div id="nerd_info_seo" hidden>
                         <hr style="width: 100%">
                         <b>AVG %</b> - ${Math.round((result.mean - 0.01) * 100 * 1.01010101)}%
@@ -309,9 +309,9 @@ async function addResults(query_results, query_text) {
                         <span style="min-width: 22px; display: block;">${Math.round(100 - robot_prob * 100)}%</span> / HUMAN
                     </div>
 
-                    <br>
-                    <hr style="width: 100%">
-                    <i style="cursor: pointer" id="gptzero_text_switch" onclick="gptzero_text.hidden=false; gptzero_text_switch.hidden=true;">SHOW MARKED TEXT</i>
+                    <br style="margin-top: 4px;">
+
+                    <i style="cursor: pointer; font-size: 10px;" id="gptzero_text_switch" onclick="gptzero_text.hidden=false; gptzero_text_switch.hidden=true;">SHOW MARKED TEXT</i>
                     <h6 id="gptzero_text" style="margin: 0" hidden>${highlighted_text}</h6>`
                 break;
             case "zerogpt":
@@ -354,31 +354,34 @@ async function addResults(query_results, query_text) {
                         <span style="min-width: 22px; display: block;">${Math.round(result.human_score)}%</span> / HUMAN
                     </div>
 
-                    <br>
-                    <hr style="width: 100%">
-                    <i style="cursor: pointer" id="zerogpt_text_switch" onclick="zerogpt_text.hidden=false; zerogpt_text_switch.hidden=true;">SHOW MARKED TEXT</i>
+                    <br style="margin-top: 4px;">
+
+                    <i style="cursor: pointer; font-size: 10px;" id="zerogpt_text_switch" onclick="zerogpt_text.hidden=false; zerogpt_text_switch.hidden=true;">SHOW MARKED TEXT</i>
                     <h6 id="zerogpt_text" style="margin: 0" hidden>${marked_text}</h6>
                 `
                 break;
             case "radar":
                 const models = ["DOLLY V2 3B", "CAMEL 5B", "DOLLY V1 6B", "VICUNA 7B"];
                 const probs = {};
+                let ai_median = 0;
+
                 Object.entries(result.map((result) => result.results[0].p)).map(([index, prob]) => probs[models[index]] = prob);
+
+                const sorted = Object.values(probs).sort();
+
+                if (sorted.length % 2 === 0) {
+                    ai_median = (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2;
+                } else {
+                    ai_median = sorted[Math.floor(sorted.length / 2)];
+                }
 
                 let resultHTML = `
                     <h3 style="margin: 0">${key} models</h3>
                     <hr style="width: 100%">
-                    <small>MEDIAN AI % ${
-                        ((() => {
-                            const sorted = Object.values(probs).sort();
-
-                            if (sorted.length % 2 === 0) {
-                                return (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2;
-                            } else {
-                                return sorted[Math.floor(sorted.length / 2)];
-                            }
-                        })() * 100).toFixed(1)
-                    }</small>
+                    <div style="display: flex; justify-content: space-between;">
+                        <small>MEDIAN AI % ${(ai_median * 100).toFixed(1)}</small>
+                        <small>MEDIAN HUMAN % ${((1-ai_median) * 100).toFixed(1)}</small>
+                    </div>
                     <div style="border-radius: 6px; overflow: hidden; background: var(--main-shadow-color); margin-top: 10px">
                 `;
 
@@ -389,12 +392,11 @@ async function addResults(query_results, query_text) {
                     const prob = score[1];
                     resultHTML += `
                     <div style="
-                        background: linear-gradient(to right, var(${
-                            (() => {
-                                if (prob < 0.5) return "--human-highlight";
-                                if (prob < 0.8) return "--mix-highlight";
-                                return "--ai-highlight";
-                            })()
+                        background: linear-gradient(to right, var(${(() => {
+                            if (prob < 0.5) return "--human-highlight";
+                            if (prob < 0.8) return "--mix-highlight";
+                            return "--ai-highlight";
+                        })()
                         }) ${prob * 100}%, transparent ${prob * 100}%) no-repeat;
                         width: calc(100% - 10px);
                         font-size: 10px;
@@ -402,7 +404,7 @@ async function addResults(query_results, query_text) {
                         padding: 4px 6px;
                         display: flex;
                         gap: 2px;
-                        ${modelIndex++ != Object.keys(probs).length-1 ? "border-bottom: solid 1px var(--main-shadow-color);" : ""}
+                        ${modelIndex++ != Object.keys(probs).length - 1 ? "border-bottom: solid 1px var(--main-shadow-color);" : ""}
                     ">
                         <span style="min-width: 22px; display: block;">${Math.round(prob * 100)}%</span> / ${model}
                     </div>`
