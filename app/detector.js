@@ -19,7 +19,7 @@ const setTitleToTopRight = async () => {
         resultTitle.style.marginTop = "-3px";
     }, 500);
     searchForm.style.position = "fixed";
-    searchForm.style.bottom = "-192px";
+    searchForm.style.bottom = -(searchForm.offsetHeight / 2 - 23) + "px";
     const requery = document.getElementById("requery");
     requery.style.bottom = "30px";
     requery.style.rotate = "0deg";
