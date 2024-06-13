@@ -18,6 +18,33 @@ function getLevel(ai) {
 
 }
 
+function addLoader() {
+    const resultDiv = document.createElement("div");
+    resultDiv.style.height = "100%"
+    resultDiv.style.display = "flex"
+    resultDiv.style.flexDirection = "column"
+    resultDiv.innerHTML = `
+    <div class="loader-51">
+<span></span>
+<span></span>
+<span></span>
+<span></span>
+<span></span>
+<span></span>
+<span></span>
+<span></span>
+<span></span>
+<span></span>
+<span></span>
+<span></span>
+<span></span>
+<span></span>
+<span></span>
+</div>
+    `
+    results.appendChild(resultDiv)
+}
+
 const setTitleToTopRight = async () => {
     if (started) return;
     started = true;
@@ -497,7 +524,6 @@ async function getDetectionResults(query_text) {
     addLoader();
 
     for (const key of keys) {
-        await sleep(100000);
         resultTitle.innerText = `Querying... ${key} (${keys.indexOf(key) + 1}/${keys.length})`
         results[key] = await (await results[key]).json()
     }
