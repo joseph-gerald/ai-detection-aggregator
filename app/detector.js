@@ -10,6 +10,14 @@ let failCount = 0;
 
 let BASE_URL = "https://api.jooo.tech/query";
 
+function getLevel(ai) {
+    if (ai < 0.3) return "✔️";
+    if (ai < 0.5) return "⚠️";
+    if (ai < 0.7) return "❓";
+    return "🚨";
+
+}
+
 const setTitleToTopRight = async () => {
     if (started) return;
     started = true;
@@ -214,7 +222,12 @@ async function addResults(query_results, query_text) {
                 average_ai /= query_array.length;
                 resultDiv.innerHTML =
                     `
-                    <h3 style="margin: 0">roberta <small><code>@ hf.co  (legacy/outdated)</code></small></h3>
+                    <div style="display: flex; justify-content: space-between">
+                    <h3 style="margin: 0">roberta <small><code>@ hf.co (legacy/outdated)</code></small></h3>
+                        <span>
+                            ${getLevel(average_ai)}
+                        </span>
+                    </div>
                     <hr style="width: 100%">
                     <p style="margin: 0"><b>AVG ROBOT - </b>${Math.round(average_ai * 100)}%</p>
                     <p style="margin: 0"><b>TOP ROBOT - </b>${Math.round(top_ai * 100)}%</p>
@@ -228,7 +241,12 @@ async function addResults(query_results, query_text) {
                 const adjustedGrade = (((result.average_score) * (result.sus_score) * (result.sussy_scores - 0.7) / (result.average_rank)) - 0.05) * 10 * 100;
                 resultDiv.innerHTML =
                     `
-                    <h3 style="margin: 0">gltr.io <small><code>(legacy/inaccurate)</code></small></h3>
+                    <div style="display: flex; justify-content: space-between">
+                    <h3 style="margin: 0">gltr.io <small><code>(legacy/outdated)</code></small></h3>
+                        <span>
+                            ${getLevel(adjustedGrade / 100)}
+                        </span>
+                    </div>
                     <hr style="width: 100%">
                     <p style="margin: 0"><b>AAG / AI %</b> - ${(Math.min(100, Math.max(adjustedGrade, 0))).toFixed(0)}%</p>
                     <i style="cursor: pointer; font-size: 10px; margin-top: 4px;" id="nerdinfoswitch_gltr" onclick="nerd_info_gltr.hidden=false; nerdinfoswitch_gltr.hidden=true;">NERD INFO</i>
@@ -247,7 +265,14 @@ async function addResults(query_results, query_text) {
             case "seoai":
                 resultDiv.innerHTML =
                     `
-                    <h3 style="margin: 0">seo.ai</h3>
+                    <div style="display: flex; justify-content: space-between">
+                        <h3 style="margin: 0">seo.ai <small><code>(legacy/outdated)</code></small></h3>
+                        <span>
+                            ${getLevel(
+                        (result.prediction + result.entropy + result.correlation + result.perplexity) / 4
+                            )}
+                        </span>
+                    </div>
                     <hr style="width: 100%">
                     <p style="margin: 0"><b>AI %</b> - ${Math.round((result.prediction + result.entropy + result.correlation + result.perplexity) / 4) * 100}%</p>
                     
@@ -280,7 +305,12 @@ async function addResults(query_results, query_text) {
                 result.completely_generated_prob = Math.round((result.completely_generated_prob - 0.01) * 1.01010101);
                 const robot_prob = result.completely_generated_prob; // Math.max(Math.min(-Math.pow(result.completely_generated_prob,2)+result.completely_generated_prob*3-0.01,1),0); // Logarithmic Growth
                 resultDiv.innerHTML = `
-                    <h3 style="margin: 0">gptzero.me</h3>
+                    <div style="display: flex; justify-content: space-between">
+                        <h3 style="margin: 0">gptzero.me</h3>
+                        <span>
+                            ${getLevel(robot_prob)}
+                        </span>
+                    </div>
                     <hr style="width: 100%">
 
                     <div style="
@@ -325,7 +355,12 @@ async function addResults(query_results, query_text) {
                 }
                 resultDiv.innerHTML =
                     `
-                    <h3 style="margin: 0">zerogpt.com</h3>
+                    <div style="display: flex; justify-content: space-between">
+                        <h3 style="margin: 0">zerogpt.com</h3>
+                        <span>
+                            ${getLevel(result.fake_score / 100)}
+                        </span>
+                    </div>
                     <hr style="width: 100%">
 
                     <div style="
@@ -375,12 +410,19 @@ async function addResults(query_results, query_text) {
                     ai_median = sorted[Math.floor(sorted.length / 2)];
                 }
 
+                const level = getLevel(ai_median);
+
                 let resultHTML = `
-                    <h3 style="margin: 0">${key} models</h3>
+                    <div style="display: flex; justify-content: space-between">
+                        <h3 style="margin: 0">radar models</h3>
+                        <span>
+                            ${level}
+                        </span>
+                    </div>
                     <hr style="width: 100%">
                     <div style="display: flex; justify-content: space-between;">
                         <small>MEDIAN AI % ${(ai_median * 100).toFixed(1)}</small>
-                        <small>MEDIAN HUMAN % ${((1-ai_median) * 100).toFixed(1)}</small>
+                        <small>MEDIAN HUMAN % ${((1 - ai_median) * 100).toFixed(1)}</small>
                     </div>
                     <div style="border-radius: 6px; overflow: hidden; background: var(--main-shadow-color); margin-top: 10px">
                 `;
@@ -452,7 +494,10 @@ async function getDetectionResults(query_text) {
 
     const keys = Object.keys(results);
 
+    addLoader();
+
     for (const key of keys) {
+        await sleep(100000);
         resultTitle.innerText = `Querying... ${key} (${keys.indexOf(key) + 1}/${keys.length})`
         results[key] = await (await results[key]).json()
     }
