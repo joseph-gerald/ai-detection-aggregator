@@ -549,14 +549,12 @@ async function getDetectionResults(query_text) {
 
 function ZEROGPT_VERDICT(query_text) {
     return fetch(BASE_URL + "/zerogpt", {
-        method: "POST",
         body: query_text
     })
 }
 
 function GPTZERO_VERDICT(query_text) {
     return fetch(BASE_URL + "/gptzero", {
-        method: "POST",
         body: query_text
     })
 }
@@ -564,7 +562,6 @@ function GPTZERO_VERDICT(query_text) {
 
 function gltr_VERDICT(query_text) {
     return fetch(BASE_URL + "/gtlr_interp", {
-        method: "POST",
         body: query_text
     })
 }
