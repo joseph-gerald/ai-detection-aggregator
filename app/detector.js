@@ -9,6 +9,7 @@ let currentRun = 0;
 let failCount = 0;
 
 let BASE_URL = "https://api.jooo.tech/query";
+BASE_URL = "http://localhost:3000/query";
 
 function getLevel(ai) {
     if (ai < 0.3) return "✔️";
@@ -159,7 +160,7 @@ function doXORCipher(str, key) {
     return btoa(encodeURI(code)).split("=").join("").split("").reverse().join("");
 }
 
-async function perform_ai_detection(query_text) {
+async function perform_ai_detection(query_text, initial = true) {
     if (sumbit.value != "Submit") return;
     currentRun++;
     setTitleToTopRight();
@@ -172,7 +173,7 @@ async function perform_ai_detection(query_text) {
 
     var query_results = undefined;
     try {
-        query_results = await getDetectionResults(query_text);
+        query_results = await getDetectionResults(query_text, initial);
         failCount = 0;
         results.innerHTML = "";
     } catch (error) {
@@ -194,7 +195,7 @@ async function perform_ai_detection(query_text) {
 
             results.appendChild(resultDiv)
 
-            perform_ai_detection(query_text);
+            perform_ai_detection(query_text, false);
             return;
         }
         console.error(error)
@@ -265,7 +266,7 @@ async function addResults(query_results, query_text) {
                 `
                 break;
             case "gltr":
-                const adjustedGrade = (((result.average_score) * (result.sus_score) * (result.sussy_scores - 0.7) / (result.average_rank)) - 0.05) * 10 * 100;
+                const adjustedGrade = (((result.average_score) * (result.overall_suspicion) * (result.suspicous_scores - 0.7) / (result.average_rank)) - 0.05) * 10 * 100;
                 resultDiv.innerHTML =
                     `
                     <div style="display: flex; justify-content: space-between">
@@ -283,9 +284,9 @@ async function addResults(query_results, query_text) {
                         <br>
                         <b>AVERAGE SCORE </b>${result.average_score}
                         <br>
-                        <b>SUS SCORE </b>${result.sus_score}
+                        <b>OVERALL SUSPICION </b>${result.overall_suspicion}
                         <br>
-                        <b>SUSSY SCORES </b>${result.sussy_scores}
+                        <b>SUSPICOUS SCORES </b>${result.suspicous_scores}
                     </div>
                 `
                 break;
@@ -505,7 +506,7 @@ async function addResults(query_results, query_text) {
     results.appendChild(resultDiv)
 }
 
-async function getDetectionResults(query_text) {
+async function getDetectionResults(query_text, initial) {
     const results = {}
     const query_array = splitTextIntoChunks(query_text, 200);
 
@@ -521,7 +522,7 @@ async function getDetectionResults(query_text) {
 
     const keys = Object.keys(results);
 
-    addLoader();
+    if (initial) addLoader();
 
     for (const key of keys) {
         resultTitle.innerText = `Querying... ${key} (${keys.indexOf(key) + 1}/${keys.length})`
@@ -547,23 +548,26 @@ async function getDetectionResults(query_text) {
     return results;
 }
 
-function ZEROGPT_VERDICT(query_text) {
-    return fetch(BASE_URL + "/zerogpt", {
-        body: query_text
+function API_WRAPPER_VERDICT(path, text) {
+    return fetch(BASE_URL + path, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ "text": text }),
     })
+}
+
+function ZEROGPT_VERDICT(query_text) {
+    return API_WRAPPER_VERDICT("/zerogpt", query_text)
 }
 
 function GPTZERO_VERDICT(query_text) {
-    return fetch(BASE_URL + "/gptzero", {
-        body: query_text
-    })
+    return API_WRAPPER_VERDICT("/gptzero", query_text)
 }
 
-
 function gltr_VERDICT(query_text) {
-    return fetch(BASE_URL + "/gtlr_interp", {
-        body: query_text
-    })
+    return API_WRAPPER_VERDICT("/gltr_interp", query_text)
 }
 
 function SEOAI_VERDICT(query_text) {
