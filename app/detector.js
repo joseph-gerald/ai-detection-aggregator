@@ -9,12 +9,11 @@ let currentRun = 0;
 let failCount = 0;
 
 let BASE_URL = "https://api.jooo.tech/query";
-BASE_URL = "http://localhost:3000/query";
 
 function getLevel(ai) {
     if (ai < 0.3) return "✔️";
-    if (ai < 0.5) return "⚠️";
-    if (ai < 0.7) return "❓";
+    if (ai < 0.6) return "❓";
+    if (ai < 0.8) return "⚠️";
     return "🚨";
 
 }
