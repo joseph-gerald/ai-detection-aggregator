@@ -13,8 +13,8 @@ let BASE_URL = "https://api.jooo.tech/query";
 
 function getLevel(ai) {
     if (ai < 0.3) return "✔️";
-    if (ai < 0.5) return "⚠️";
-    if (ai < 0.7) return "❓";
+    if (ai < 0.6) return "❓";
+    if (ai < 0.8) return "⚠️";
     return "🚨";
 
 }
@@ -527,7 +527,7 @@ async function getDetectionResults(query_text, initial) {
     const results = {}
     const query_array = splitTextIntoChunks(query_text, 200);
 
-    results["radar"] = RADAR_AGGREGATE(query_text)
+    // results["radar"] = RADAR_AGGREGATE(query_text)
 
     results["gptzero"] = GPTZERO_VERDICT(query_text)
     results["zerogpt"] = ZEROGPT_VERDICT(query_text)
