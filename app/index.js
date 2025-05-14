@@ -52,7 +52,7 @@ window.addEventListener('load', () => {
     loadingCard.classList.add("slide-out");
     setTimeout(function () {
         loadingCard.remove();
-    }, 750);
+    }, 1000);
 });
 
 updateColorScheme();

@@ -4,12 +4,12 @@ const resultTitle = document.querySelector(".search-result-title");
 const resultsContainer = document.querySelector(".results-container");
 const results = document.querySelector(".results");
 const requery = document.getElementById("requery");
+
 let started = false;
 let currentRun = 0;
 let failCount = 0;
 
 let BASE_URL = "https://api.jooo.tech/query";
-BASE_URL = "http://localhost:3000/query";
 
 function getLevel(ai) {
     if (ai < 0.3) return "✔️";
@@ -78,6 +78,9 @@ const setTitleBack = async () => {
     glowBox.style.bottom = "-160px";
     resultsContainer.style.transitionDuration = "1s";
     resultsContainer.style.filter = "blur(30px) opacity(0)";
+
+    query_content.focus();
+
     setTimeout(() => {
         requery.style.rotate = "180deg";
     }, 500)
@@ -100,29 +103,42 @@ async function perform_query(query_text) {
 }
 
 function createMarkedTextElement(query_results, query_text) {
-
+    const lines = query_text.split("\n");
     const gptzero = query_results.gptzero;
     const zerogpt = query_results.zerogpt;
 
-    const markedText = document.createElement("div");
-    markedText.classList.add("result")
-    markedText.style.height = "100%"
-    markedText.style.display = "flex"
-    markedText.style.flexDirection = "column"
+    const markedTextElm = document.createElement("div");
+    markedTextElm.classList.add("result")
+    markedTextElm.style.height = "100%"
+    markedTextElm.style.display = "flex"
+    markedTextElm.style.flexDirection = "column"
 
     let highlighted_text = "";
+
+    if (!gptzero.data) throw new Error("Invalid GPTZero data (server error?)");
 
     for (const part of gptzero.data) {
         const ai_prob = part["generated_prob"]
         const highlight = ai_prob > 0.9 ? "--ai-highlight" : "--human-highlight";
         const new_text = `<span style="background-color: var(${highlight});">${part.sentence}</span>`;
-        highlighted_text += new_text
-        //console.log(new_text)
-    }
-    console.log("ZEROGPT: " + gptzero.data.length)
 
+        highlighted_text += new_text;
+
+        if (lines.some((line) => line.includes(part.sentence))) {
+            const line = lines.find((line) => line.includes(part.sentence));
+            const lineIndex = lines.indexOf(line);
+            
+            const nextLine = lines[lineIndex + 1];
+            highlighted_text += "<br>";
+
+            if (nextLine == "") {
+                highlighted_text += "<br>";
+            }
+        }
+    }
+    
     let marked_text = highlighted_text;
-    console.log("ZEROGPT: " + zerogpt.sus_sentences.length)
+    
     for (const index in zerogpt.sus_sentences) {
         const sentence = zerogpt.sus_sentences[index];
         const ai_prob = 1;
@@ -131,7 +147,7 @@ function createMarkedTextElement(query_results, query_text) {
         marked_text = marked_text.replaceAll(sentence, `<span style="background-color: var(${highlight});">${sentence}</span>`)
     }
 
-    markedText.innerHTML = `
+    markedTextElm.innerHTML = `
     <h2 style="margin: 0">marked text</h2>
     <h6 style="margin-top: 4px;">MAJORITY HUMAN WRITER LIKELYHOOD %:</h6>
     <div style="width: 100%; display: flex; border: solid 1px var(--main-border-color); border-radius: 4px; background-color: var(--main-shadow-color); padding: 4px 0; overflow: hidden; margin-top: 2px; margin-bottom: 6px; font-weight: bold; font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;">
@@ -147,7 +163,7 @@ function createMarkedTextElement(query_results, query_text) {
     </div>
     <h6 style="margin: 0">${marked_text}</h6>`
 
-    return markedText;
+    return markedTextElm;
 }
 
 function doXORCipher(str, key) {
@@ -176,7 +192,12 @@ async function perform_ai_detection(query_text, initial = true) {
         query_results = await getDetectionResults(query_text, initial);
         failCount = 0;
         results.innerHTML = "";
+
+        resultTitle.innerText = `Finished Querying in ${((Date.now() - startTime) / 1000).toFixed(1)}s!`
+    
+        addResults(query_results, query_text);
     } catch (error) {
+        console.log(error)
         failCount++;
         if (failCount < 3) {
             const message = `Retrying... (attempt ${failCount})`;
@@ -216,10 +237,6 @@ async function perform_ai_detection(query_text, initial = true) {
         requery.style.rotate = "-180deg";
         return
     }
-
-    resultTitle.innerText = `Finished Querying in ${((Date.now() - startTime) / 1000).toFixed(1)}s!`
-
-    addResults(query_results, query_text);
 }
 
 async function addResults(query_results, query_text) {
@@ -526,7 +543,13 @@ async function getDetectionResults(query_text, initial) {
 
     for (const key of keys) {
         resultTitle.innerText = `Querying... ${key} (${keys.indexOf(key) + 1}/${keys.length})`
-        results[key] = await (await results[key]).json()
+
+        try {
+            results[key] = await (await results[key]).json()
+        } catch (error) {
+            // add something maybe
+            console.error(`Error fetching ${key}:`, error);
+        }
     }
 
 
@@ -693,3 +716,5 @@ function updateKeyup() {
 }
 
 updateKeyup();
+
+query_content.focus();
